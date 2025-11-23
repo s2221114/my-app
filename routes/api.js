@@ -651,7 +651,6 @@ router.get('/admin/all-users', (req, res) => {
         return res.status(403).send("⛔ アクセス拒否: 正しいキーを入力してください。");
     }
 
-    // SQLはシンプルにデータを取り出すだけにする
     const sql = `
         SELECT 
             id, 
@@ -660,7 +659,10 @@ router.get('/admin/all-users', (req, res) => {
             max_hp, 
             potion_count, 
             total_study_time_seconds,
-            (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id AND is_correct = 1) as solved_count
+            /* 正解数 (is_correct = 1) */
+            (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id AND is_correct = 1) as solved_count,
+            /* 総回答数 (すべて) */
+            (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id) as total_answer_count
         FROM users 
         ORDER BY id ASC
     `;
@@ -674,13 +676,14 @@ router.get('/admin/all-users', (req, res) => {
                 <meta charset="UTF-8">
                 <style>
                     body { font-family: sans-serif; padding: 20px; }
-                    table { border-collapse: collapse; width: 100%; max-width: 1000px; }
+                    table { border-collapse: collapse; width: 100%; max-width: 1200px; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; font-weight: bold; }
+                    th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
                     tr:nth-child(even) { background-color: #f9f9f9; }
                     tr:hover { background-color: #f1f1f1; }
                     h2 { color: #333; }
                     .num { text-align: right; }
+                    .center { text-align: center; }
                 </style>
             </head>
             <body>
@@ -694,30 +697,21 @@ router.get('/admin/all-users', (req, res) => {
                             <th>Lv</th>
                             <th>HP</th>
                             <th>ポーション</th>
-                            <th>正解数 (問)</th>
-                            <th>学習時間</th>
-                        </tr>
+                            <th>総回答数</th> <th>正解数</th>
+                            <th>学習時間 (秒)</th> </tr>
                     </thead>
                     <tbody>
         `;
 
         rows.forEach(user => {
-            // ★ JavaScript側で時間を計算して整形する (ここならエラーにならない)
-            const totalSeconds = user.total_study_time_seconds || 0;
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const timeString = `${hours}時間 ${minutes}分`;
-
             html += `
                 <tr>
-                    <td>${user.id}</td>
+                    <td class="center">${user.id}</td>
                     <td><strong>${user.username}</strong></td>
                     <td class="num">${user.level}</td>
                     <td class="num">${user.max_hp}</td>
                     <td class="num">${user.potion_count}</td>
-                    <td class="num" style="color: blue; font-weight:bold;">${user.solved_count}</td>
-                    <td class="num">${timeString}</td>
-                </tr>
+                    <td class="num">${user.total_answer_count}</td> <td class="num" style="color: blue; font-weight:bold;">${user.solved_count}</td> <td class="num">${user.total_study_time_seconds}</td> </tr>
             `;
         });
 
