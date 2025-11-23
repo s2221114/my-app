@@ -666,6 +666,7 @@ router.get('/admin/all-users', (req, res) => {
             /* 時間(秒)を見やすく「◯時間◯分」に変換して表示 */
             (total_study_time_seconds / 3600) || '時間 ' || 
             ((total_study_time_seconds % 3600) / 60) || '分' as study_time_formatted
+            (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id AND is_correct = 1) as solved_count
         FROM users 
         ORDER BY id ASC
     `;
