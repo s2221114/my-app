@@ -646,15 +646,12 @@ router.post('/users/:id/use-potion', (req, res) => {
 
 // 管理者用：全ユーザーのステータス・学習時間を確認するAPI
 router.get('/admin/all-users', (req, res) => {
-    // 1. 簡易的なセキュリティ (合言葉を知っている人だけアクセス可能)
-    // ブラウザでアクセスする時: /api/admin/all-users?key=admin123
     const secretKey = "admin123"; 
     if (req.query.key !== secretKey) {
         return res.status(403).send("⛔ アクセス拒否: 正しいキーを入力してください。");
     }
 
-    // 2. ユーザー情報と学習時間を取得
-    // (進捗率の計算は複雑なので、まずは「レベル」「XP」「学習時間」を表示します)
+    // SQLはシンプルにデータを取り出すだけにする
     const sql = `
         SELECT 
             id, 
@@ -663,9 +660,6 @@ router.get('/admin/all-users', (req, res) => {
             max_hp, 
             potion_count, 
             total_study_time_seconds,
-            /* 時間(秒)を見やすく「◯時間◯分」に変換して表示 */
-            (total_study_time_seconds / 3600) || '時間 ' || 
-            ((total_study_time_seconds % 3600) / 60) || '分' as study_time_formatted
             (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id AND is_correct = 1) as solved_count
         FROM users 
         ORDER BY id ASC
@@ -674,23 +668,24 @@ router.get('/admin/all-users', (req, res) => {
     db.all(sql, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
 
-        // 3. 結果をきれいなHTMLの表で表示する (JSONではなく見やすい表にします)
         let html = `
             <html>
             <head>
                 <meta charset="UTF-8">
                 <style>
                     body { font-family: sans-serif; padding: 20px; }
-                    table { border-collapse: collapse; width: 100%; }
+                    table { border-collapse: collapse; width: 100%; max-width: 1000px; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; }
+                    th { background-color: #f2f2f2; font-weight: bold; }
                     tr:nth-child(even) { background-color: #f9f9f9; }
+                    tr:hover { background-color: #f1f1f1; }
                     h2 { color: #333; }
+                    .num { text-align: right; }
                 </style>
             </head>
             <body>
                 <h2>👑 ユーザー管理データ一覧</h2>
-                <p>現在の登録ユーザー数: ${rows.length}人</p>
+                <p>現在の登録ユーザー数: <strong>${rows.length}</strong> 人</p>
                 <table>
                     <thead>
                         <tr>
@@ -699,23 +694,29 @@ router.get('/admin/all-users', (req, res) => {
                             <th>Lv</th>
                             <th>HP</th>
                             <th>ポーション</th>
-                            <th>学習時間 (秒)</th>
-                            <th>学習時間 (目安)</th>
+                            <th>正解数 (問)</th>
+                            <th>学習時間</th>
                         </tr>
                     </thead>
                     <tbody>
         `;
 
         rows.forEach(user => {
+            // ★ JavaScript側で時間を計算して整形する (ここならエラーにならない)
+            const totalSeconds = user.total_study_time_seconds || 0;
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const timeString = `${hours}時間 ${minutes}分`;
+
             html += `
                 <tr>
                     <td>${user.id}</td>
                     <td><strong>${user.username}</strong></td>
-                    <td>${user.level}</td>
-                    <td>${user.max_hp}</td>
-                    <td>${user.potion_count}</td>
-                    <td>${user.total_study_time_seconds}</td>
-                    <td>${user.study_time_formatted}</td>
+                    <td class="num">${user.level}</td>
+                    <td class="num">${user.max_hp}</td>
+                    <td class="num">${user.potion_count}</td>
+                    <td class="num" style="color: blue; font-weight:bold;">${user.solved_count}</td>
+                    <td class="num">${timeString}</td>
                 </tr>
             `;
         });
