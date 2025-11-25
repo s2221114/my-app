@@ -124,17 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
             this.cacheElements();
             this.loadLottieAnimations();
             this.bindEvents();
+
             const savedUser = localStorage.getItem('currentUser');
-            const savedPlayerHP = localStorage.getItem('currentPlayerHP');
+
             if (savedUser) {
                 this.state.currentUser = JSON.parse(savedUser);
-                // 1. 最大HP (max_hp) を currentUser から読み込む
+
                 if (this.state.currentUser.max_hp) {
                     this.state.playerMaxHP = this.state.currentUser.max_hp;
                 }
 
-                // 2. 現在のHP (playerHP) を localStorage から別途読み込む
-                // const savedPlayerHP = localStorage.getItem('currentPlayerHP');
+                const hpKey = `hp_${this.state.currentUser.id}`;
+                const savedPlayerHP = localStorage.getItem(hpKey);
 
                 if (savedPlayerHP !== null) {
                     // 保存された「現在のHP」がある場合
@@ -147,17 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.state.playerHP = this.state.playerMaxHP;
                 }
 
-                // 3. 安全装置 (もし現在のHPが最大HPを超えていたら丸める)
+                // 安全装置 (もし現在のHPが最大HPを超えていたら丸める)
                 if (this.state.playerHP > this.state.playerMaxHP) {
                     this.state.playerHP = this.state.playerMaxHP;
                 }
-
-                /*
-                // 4. もし保存されたHPが0以下だったら、全回復させる
-                if (this.state.playerHP <= 0) {
-                    this.state.playerHP = this.state.playerMaxHP;
-                }
-                */
 
                 this.state.selectedCategory = localStorage.getItem('selectedCategory') || '';
                 this.state.selectedField = localStorage.getItem('selectedField') || '';
@@ -165,13 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lastScreen = localStorage.getItem('lastActiveScreen');
                 this.showScreen(lastScreen || 'status');
             } else {
-                if (savedPlayerHP !== null) {
-                    this.state.playerHP = parseInt(savedPlayerHP, 10);
-                    if (this.state.playerHP <= 0) {
-                        this.state.playerHP = 0; // 0に固定
-                    }
-                }
-
                 this.showScreen('auth');
             }
         },
@@ -215,43 +202,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 timerDisplay: D.getElementById('timer-display'),
                 questionText: D.getElementById('question-text'), choicesContainer: D.getElementById('choices-container'),
                 feedbackArea: D.getElementById('feedback-area'),
-                // monsterDamageEffect: D.querySelector('.character-enemy .damage-effect'),
-                // playerDamageEffect: D.querySelector('.character-player .damage-effect'),
-                monsterDamageEffect: D.getElementById('attack-effect-lottie'), // ★★★ 変更 ★★★
-                playerDamageEffect: D.getElementById('player-damage-lottie'),   // ★★★ 変更 ★★★
+                monsterDamageEffect: D.getElementById('attack-effect-lottie'),
+                playerDamageEffect: D.getElementById('player-damage-lottie'),
                 playerHPBarFill: D.getElementById('player-hp-bar-fill'), playerHPText: D.getElementById('player-hp-text'),
                 monsterHPBarFill: D.getElementById('monster-hp-bar-fill'), monsterHPText: D.getElementById('monster-hp-text'),
-                // ★★★ ここから2行追加 ★★★
                 playerHPContainer: D.querySelector('.character-player .hp-bar-container'),
                 monsterHPContainer: D.querySelector('.character-enemy .hp-bar-container'),
-                // ★★★ ここまで追加 ★★★
                 xpBarFillStatus: D.getElementById('xp-bar-fill-status'),
                 xpDisplayStatus: D.getElementById('xp-display-status'),
                 xpToNextStatus: D.getElementById('xp-to-next-status'),
-
-                //monsterImage: D.querySelector('.character-enemy .monster-image'),
-                // ★★★ monsterImageのidセレクタを修正し、playerImageを追加 ★★★
                 monsterImage: D.getElementById('monster-image'),
                 playerImage: D.getElementById('player-image'),
-
                 monsterName: D.getElementById('monster-name'),
                 pauseBtn: D.getElementById('pause-btn'),
                 pauseOverlay: D.getElementById('pause-overlay'),
                 resumeBtn: D.getElementById('resume-btn'),
                 quitBtn: D.getElementById('quit-btn'),
-                // ★★★ ここに追加 ★★★
-                // earnedTitlesList: D.getElementById('earned-titles-list'),
-                
-                // ★★★ ここが抜けていました ★★★
                 loginUser: D.getElementById('login-user'),
                 loginPass: D.getElementById('login-pass'),
                 registerUser: D.getElementById('register-user'),
                 registerPass: D.getElementById('register-pass'),
                 toggleLoginPass: D.getElementById('toggle-login-pass'),
                 toggleRegisterPass: D.getElementById('toggle-register-pass'),
-                // ★★★ ここまで ★★★
-
-                // ★★★ ここから追加 ★★★
                 resultsScreen: D.getElementById('results-screen'),
                 totalScoreDisplay: D.getElementById('total-score-display'),
                 strategyScoreDisplay: D.getElementById('strategy-score-display'),
@@ -259,55 +231,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 technologyScoreDisplay: D.getElementById('technology-score-display'),
                 // resultsHistoryList: D.getElementById('results-history-list'),
                 backToStatusFromResultsBtn: D.getElementById('back-to-status-from-results-btn'),
-                // ★★★ ここまで追加 ★★★
-
-                // ★★★ ここから追加 ★★★
                 historyScreen: D.getElementById('history-screen'),
                 historyList: D.getElementById('history-list'),
                 backToStatusFromHistoryBtn: D.getElementById('back-to-status-from-history-btn'),
                 viewHistoryBtn: D.getElementById('view-history-btn'),
-                // ★★★ ここまで追加 ★★★
-
-                // ★★★ この1行を追加 ★★★
                 unsureCheckbox: D.getElementById('unsure-checkbox'),
-
                 commentaryArea: D.getElementById('commentary-area'),
                 commentaryText: D.getElementById('commentary-text'),
-
-                // ★★★ ここから3行追加 ★★★
                 commentaryOverlay: D.getElementById('commentary-overlay'),
                 modalCommentaryText: D.getElementById('modal-commentary-text'),
                 nextQuestionBtn: D.getElementById('next-question-btn'),
-
                 startUnsureQuizBtn: D.getElementById('start-unsure-quiz-btn'),
-
                 titlesScreen: D.getElementById('titles-screen'),
                 viewTitlesBtn: D.getElementById('view-titles-btn'),
                 backToStatusFromTitlesBtn: D.getElementById('back-to-status-from-titles-btn'),
                 titlesListLarge: D.getElementById('titles-list-large'),
-
                 rewardNotificationArea: D.getElementById('reward-notification-area'),
-
                 playerHPBarFillStatus: D.getElementById('player-hp-bar-fill-status'),
                 playerHPTextStatus: D.getElementById('player-hp-text-status'),
-
                 potionCountDisplay: D.getElementById('potion-count-display'),
                 usePotionBtn: D.getElementById('use-potion-btn'),
-
-                // // ★★★ ここから追加 ★★★
-                // historyChoiceScreen: D.getElementById('history-choice-screen'),
-                // unsureHistoryScreen: D.getElementById('unsure-history-screen'),
-                // backToStatusFromChoiceBtn: D.getElementById('back-to-status-from-choice-btn'),
-                // viewYearlyHistoryBtn: D.getElementById('view-yearly-history-btn'),
-                // viewUnsureHistoryBtn: D.getElementById('view-unsure-history-btn'),
-                // backToChoiceFromUnsureBtn: D.getElementById('back-to-choice-from-unsure-btn'),
-                // unsureHistoryList: D.getElementById('unsure-history-list'),
-                // // ★ 既存のhistory画面の戻るボタンIDを変更
-                // backToChoiceFromHistoryBtn: D.getElementById('back-to-choice-from-history-btn'),
-                // // ★★★ ここまで追加 ★★★
             };
         },
-        // ★★★ この関数全体を置き換える ★★★
         loadLottieAnimations() {
             try {
                 // lottie オブジェクトが存在するか確認
@@ -319,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // player-damage アニメーションの読み込み
                 if (this.elements.playerDamageEffect) { // 要素が存在するか確認
                     this.elements.playerDamageAnim = lottie.loadAnimation({
-                        container: this.elements.playerDamageEffect, 
+                        container: this.elements.playerDamageEffect,
                         renderer: 'svg',
                         loop: false,
                         autoplay: false,
@@ -331,11 +276,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     console.error("playerDamageEffect 要素が見つかりません。");
                 }
-                
+
                 // monster-damage アニメーションの読み込み
                 if (this.elements.monsterDamageEffect) { // 要素が存在するか確認
                     this.elements.monsterDamageAnim = lottie.loadAnimation({
-                        container: this.elements.monsterDamageEffect, 
+                        container: this.elements.monsterDamageEffect,
                         renderer: 'svg',
                         loop: false,
                         autoplay: false,
@@ -350,16 +295,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (err) {
                 console.error("Lottieアニメーションの読み込み中にエラーが発生しました:", err);
-                // ★重要★ エラーが起きても、以降の処理を停止させない
             }
         },
-        // ★★★ 置き換えここまで ★★★
         bindEvents() {
             this.elements.showRegisterLink.addEventListener('click', () => this.toggleAuthForm(true));
             this.elements.showLoginLink.addEventListener('click', () => this.toggleAuthForm(false));
             this.elements.loginBtn.addEventListener('click', (e) => this.handleLogin(e));
             this.elements.registerBtn.addEventListener('click', (e) => this.handleRegister(e));
-            // ★★★ ここから2つのイベントリスナーを追加 ★★★
+
             // ログイン画面のパスワード表示切り替え
             this.elements.toggleLoginPass.addEventListener('click', () => {
                 const input = this.elements.loginPass;
@@ -389,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     icon.classList.add('fa-eye');
                 }
             });
-            // ★★★ ここまで追加 ★★★
+
             this.elements.logoutBtnStatus.addEventListener('click', () => this.handleLogout());
             this.elements.goToCategoryBtn.addEventListener('click', () => this.showScreen('category'));
             this.elements.backToStatusBtn.addEventListener('click', () => this.showScreen('status'));
@@ -400,34 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.quitBtn.addEventListener('click', () => this.quitGame());
             this.elements.resumeBtn.addEventListener('click', () => this.resumeGame());
             this.elements.pauseBtn.addEventListener('click', () => this.pauseGame());
-            // ★★★ 結果画面の戻るボタンイベントを追加 ★★★
             this.elements.backToStatusFromResultsBtn.addEventListener('click', () => this.showScreen('status'));
-
-            // ★★★ ここから追加 ★★★
             this.elements.backToStatusFromHistoryBtn.addEventListener('click', () => this.showScreen('status'));
             this.elements.viewHistoryBtn.addEventListener('click', () => this.loadAndDisplayHistory());
-            // ★★★ ここまで追加 ★★★
-
-            /*
-            // ★ 既存の履歴ボタンの動作を変更 (選択画面へ)
-            this.elements.viewHistoryBtn.addEventListener('click', () => this.showScreen('history-choice'));
-
-            // ★ 既存の修練履歴画面の戻るボタンの動作を変更 (選択画面へ)
-            // this.elements.backToStatusFromHistoryBtn.addEventListener('click', () => this.showScreen('status')); // ← この行を削除
-            this.elements.backToChoiceFromHistoryBtn.addEventListener('click', () => this.showScreen('history-choice')); // ← この行を追加
-
-            // ★★★ ここから新しいボタンのイベントを追加 ★★★
-            // 選択画面 -> ステータス画面
-            this.elements.backToStatusFromChoiceBtn.addEventListener('click', () => this.showScreen('status'));
-            // 選択画面 -> 修練履歴画面
-            this.elements.viewYearlyHistoryBtn.addEventListener('click', () => this.loadAndDisplayHistory()); // 既存の関数を呼ぶ
-            // 選択画面 -> チェック履歴画面
-            this.elements.viewUnsureHistoryBtn.addEventListener('click', () => this.loadAndDisplayUnsureHistory()); // 新しい関数を呼ぶ
-            // チェック履歴画面 -> 選択画面
-            this.elements.backToChoiceFromUnsureBtn.addEventListener('click', () => this.showScreen('history-choice'));
-            // ★★★ ここまで追加 ★★★
-            */
-
             this.elements.categoryList.addEventListener('click', (e) => {
                 const button = e.target.closest('.category-btn');
                 if (button) {
@@ -450,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.showScreen('detail');
                 }
             });
-            
             this.elements.detailList.addEventListener('click', (e) => {
                 const button = e.target.closest('.detail-btn');
                 if (button && !button.disabled) {
@@ -508,21 +425,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw err;
             }
         },
-        // ★★★ ここから関数を丸ごと追加 ★★★
-        /**
-         * 学習時間を計測し、サーバーに送信する
-         */
+        // 学習時間を計測し、サーバーに送信する
         async logStudyTime() {
             if (!this.state.sessionStartTime) return; // 計測が開始されていなければ何もしない
 
             const endTime = Date.now();
             const durationInSeconds = Math.round((endTime - this.state.sessionStartTime) / 1000);
-            
+
             // 0秒より大きい場合のみ記録
             if (durationInSeconds > 0) {
                 try {
                     await this.api(`/api/users/${this.state.currentUser.id}/log-time`, 'POST', { 
-                        duration: durationInSeconds 
+                        duration: durationInSeconds
                     });
                 } catch (error) {
                     console.error("学習時間の記録に失敗しました:", error);
@@ -530,15 +444,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             this.state.sessionStartTime = null; // タイマーをリセット
         },
-        // ★★★ ここまで追加 ★★★
-        // ★★★ この関数が欠けている ★★★
+
         showMessage(element, message, isSuccess = false) {
             if (element) {
                 element.textContent = message;
                 element.className = isSuccess ? 'message-area success' : 'message-area';
             }
         },
-        // ★★★ ここまで ★★★
+
         toggleAuthForm(showRegister) {
             this.elements.loginForm.classList.toggle('hidden', showRegister);
             this.elements.registerForm.classList.toggle('hidden', !showRegister);
@@ -553,17 +466,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (screenName === 'status') {
                 this.updateUserInfo();
                 this.loadStats();
-                // this.loadAndDisplayTitles(); // ★★★ 称号表示関数を呼び出し ★★★
             }
             if (screenName === 'category') { this.loadAndDisplayCategoryProgress(); }
             if (screenName === 'field') { this.populateFields(); }
             if (screenName === 'subfield') { this.populateSubfields(); }
             if (screenName === 'detail') { this.populateDetails(); }
             if (screenName === 'year') { this.loadAndDisplayYearProgress(); }
-            // ★★★ ここから追加 ★★★
-            // if (screenName === 'history-choice') { /* 特に追加処理なし */ }
-            // if (screenName === 'unsure-history') { /* loadAndDisplayUnsureHistoryで読み込む */ }
-            // ★★★ ここまで追加 ★★★
             if (screenName === 'game') { this.updateUserInfo(); }
 
             else if (screenName === 'titles') {
@@ -571,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         async populateFields() {
-            // ★★★ タイトル表示を修正 ★★★
             this.elements.fieldScreenTitle.textContent = displayNameMap[this.state.selectedCategory] || this.state.selectedCategory;
             const fields = Object.keys(quizHierarchy[this.state.selectedCategory] || {});
             this.elements.fieldList.innerHTML = '';
@@ -583,11 +490,10 @@ document.addEventListener('DOMContentLoaded', () => {
             this.loadAndDisplayFieldProgress();
         },
         async populateSubfields() {
-            // ★★★ タイトル表示を修正 ★★★
             const categoryName = displayNameMap[this.state.selectedCategory] || this.state.selectedCategory;
             const fieldName = displayNameMap[this.state.selectedField] || this.state.selectedField;
             this.elements.subfieldScreenTitle.textContent = `${categoryName} / ${fieldName}`;
-            
+
             const subfields = Object.keys(quizHierarchy[this.state.selectedCategory]?.[this.state.selectedField] || {});
             this.elements.subfieldList.innerHTML = '';
             for (const subfield of subfields) {
@@ -598,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
             this.loadAndDisplaySubfieldProgress();
         },
         async populateDetails() {
-            // ★★★ タイトル表示を修正 ★★★
             const fieldName = displayNameMap[this.state.selectedField] || this.state.selectedField;
             const subfieldName = displayNameMap[this.state.selectedSubfield] || this.state.selectedSubfield;
             this.elements.detailScreenTitle.textContent = `${fieldName} / ${subfieldName}`;
@@ -617,8 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const className = `${type}-btn`;
             const textClassName = `${type}-btn-text`;
             const isDisabled = count === 0;
-            
-            // ★★★ 表示名をあだ名リストから取得 ★★★
+
             const displayName = displayNameMap[text] || text;
             const buttonText = displayName;
 
@@ -638,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createMonsterButton(detail, monster, count) {
             const isDisabled = count === 0;
             // モンスター名はdisplayNameMapを使わないので変更なし
-            const buttonText = monster.name; 
+            const buttonText = monster.name;
 
             // ボタンに data-question-count 属性を追加
             return `
@@ -684,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. ログアウト前のHPと最大HPを一時的に保持する
             const currentHP = this.state.playerHP;
             const currentMaxHP = this.state.playerMaxHP;
-            
+
             // 2. localStorage.clear() をやめて、HP以外を個別に削除する
             localStorage.removeItem('currentUser');
             // localStorage.removeItem('currentPlayerHP'); // ← HPは削除しない
@@ -709,11 +613,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.showMessage(this.elements.authMessage, '');
         },
 
-        // ★★★ ここに新しい関数を追加 ★★★
         async loadAndDisplayTitles() {
-            // ★★★ 表示先を titlesListLarge に変更 ★★★
             const targetList = this.elements.titlesListLarge;
-            
+
             if (!targetList) return; // 要素がなければ中断
 
             targetList.innerHTML = '<p>称号はありません</p>'; // デフォルトテキスト
@@ -725,11 +627,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         // 新しいアチーブメント項目の div を作成
                         const achievement = document.createElement('div');
                         achievement.className = 'achievement-item';
-                        
+
                         // トロフィーアイコン (Font Awesome)
                         const icon = document.createElement('i');
                         icon.className = 'fas fa-trophy achievement-icon'; // トロフィーアイコン
-                        
+
                         // 称号テキスト
                         const titleText = document.createElement('span');
                         titleText.className = 'achievement-title';
@@ -1000,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // ... (省略) ...
                         return;
                     }
-                    
+
                     // 全問解き終わった場合 (HPは0でない)
                     // startGame を再度呼び出して、最新のチェックリストで再スタート（ループ）する
                     console.log("「チェックから出題」の1周が完了。リストを更新して再スタートします。");
@@ -1033,12 +935,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 this.logStudyTime();
 
-                /*
-                this.elements.feedbackArea.textContent = endMessage;
-                this.elements.questionText.textContent = 'クイズ終了';
-                this.elements.choicesContainer.innerHTML = '';
-                */
-
                 // 中央ポップアップ (feedbackArea) は使わない
                 if (this.elements.feedbackArea) {
                     this.elements.feedbackArea.innerHTML = '';
@@ -1047,32 +943,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.elements.feedbackArea.style.position = '';
                     this.elements.feedbackArea.style.transform = '';
                 }
-                
+
                 // 問題文エリア (questionText) に終了メッセージを表示する
-                if (this.elements.questionText) this.elements.questionText.textContent = endMessage; 
-                
+                if (this.elements.questionText) this.elements.questionText.textContent = endMessage;
+
                 if (this.elements.choicesContainer) this.elements.choicesContainer.innerHTML = '';
                 if (this.elements.commentaryArea) this.elements.commentaryArea.classList.add('hidden');
 
                 clearInterval(this.state.timer);
                 return;
             }
-            /*
-            this.elements.commentaryArea.classList.add('hidden'); // ★★★ 解説を隠す ★★★
-            this.elements.unsureCheckbox.checked = false; // ★★★ この1行を追加 ★★★
-            const quiz = this.state.quizzes[this.state.currentQuizIndex];
-            this.elements.questionText.innerHTML = quiz.question;
-            this.elements.choicesContainer.innerHTML = '';
-            */
             // 先に quiz オブジェクトを取得し、問題文を表示する
             const quiz = this.state.quizzes[this.state.currentQuizIndex];
             this.elements.questionText.innerHTML = quiz.question;
 
-            /*
-            this.elements.commentaryArea.classList.add('hidden');
-            this.elements.choicesContainer.innerHTML = '';
-            */
-            
             if (this.elements.commentaryArea) {
                 this.elements.commentaryArea.classList.add('hidden');
             }
@@ -1090,11 +974,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            /*
-            this.elements.feedbackArea.innerHTML = '';
-            this.elements.feedbackArea.className = 'feedback-area';
-            */
-            // ★★★ ここから修正 (if で囲む) ★★★
             if (this.elements.feedbackArea) {
                 this.elements.feedbackArea.innerHTML = '';
                 this.elements.feedbackArea.className = 'feedback-area';
@@ -1103,7 +982,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.elements.feedbackArea.style.position = '';
                 this.elements.feedbackArea.style.transform = '';
             }
-            // ★★★ ここまで修正 ★★★
 
             const choices = quiz.choices.sort(() => Math.random() - 0.5);
             choices.forEach(choice => {
@@ -1111,19 +989,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.textContent = choice;
                 btn.className = 'choice-btn';
                 btn.onclick = () => this.checkAnswer(choice, quiz, btn);
-                /*
-                this.elements.choicesContainer.appendChild(btn);
-                */
-                // ★★★ ここにも null チェックを追加 ★★★
+
                 if (this.elements.choicesContainer) {
                     this.elements.choicesContainer.appendChild(btn);
                 }
             });
 
-            // ★★★ startTimerに関数のtime_limitを渡すように変更 ★★★
             this.startTimer(quiz.time_limit || 60);
         },
-        // ★★★ startTimerが時間を受け取るように変更 ★★★
+
         startTimer(limit) {
             this.state.timeLeft = limit; // 固定値ではなく、受け取った値を使う
             this.elements.timerDisplay.textContent = this.state.timeLeft;
@@ -1159,7 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 this.state.lastQuizId = quiz.id;
                 if (this.state.gameMode === 'unsure') {
-                    this.state.lastAnswerWasCorrect = undefined; 
+                    this.state.lastAnswerWasCorrect = undefined;
                 } else {
                     this.state.lastAnswerWasCorrect = isCorrect;
                 }
@@ -1183,12 +1057,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             this.state.monsterHPCache[this.state.selectedDetail] = this.state.monsterHP;
                         }
 
-                        /*
-                        if (this.state.monsterHP <= 0 && this.state.gameMode === 'standard') {
-                            titleResult = await this.api(`/api/users/${this.state.currentUser.id}/defeat`, 'POST', { detail_name: this.state.selectedDetail });
-                        }
-                        */
-
                         const xpNeeded = this.state.currentUser.level * 20;
                         if (this.state.currentUser.xp >= xpNeeded) {
                             levelUpOccurred = true;
@@ -1208,8 +1076,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 }
-                // 変動した「現在のHP」を localStorage に保存する
-                localStorage.setItem('currentPlayerHP', this.state.playerHP);
+
+                // 変動した「現在のHP」をユーザーIDごとのキーで保存する
+                localStorage.setItem(`hp_${this.state.currentUser.id}`, this.state.playerHP);
 
                 this.updateHPDisplay();
                 this.updateUserInfo();
@@ -1217,8 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // エフェクト表示
                 if (isCorrect) {
                     btn.classList.add('correct');
-                    // this.elements.monsterDamageEffect.classList.add('show');
-                    // setTimeout(() => this.elements.monsterDamageEffect.classList.remove('show'), 500);
+
                     // Lottie再生処理
                     if (this.elements.monsterDamageAnim) {
                         this.elements.monsterDamageEffect.style.opacity = '1'; // 表示
@@ -1226,8 +1094,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     if (btn) btn.classList.add('incorrect');
-                    // this.elements.playerDamageEffect.classList.add('show');
-                    // setTimeout(() => this.elements.playerDamageEffect.classList.remove('show'), 500);
+
                     // Lottie再生処理
                     if (this.elements.playerDamageAnim) {
                         this.elements.playerDamageEffect.style.opacity = '1'; // 表示
@@ -1237,17 +1104,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (b.textContent === quiz.answer) b.classList.add('correct');
                     });
                 }
-        
+
                 // フィードバックメッセージの構築と表示
                 feedbackHTML = isCorrect ? '正解' : '不正解';
-                /*
-                if (levelUpOccurred) {
-                    feedbackHTML += `<br><small style="font-size: 0.4em; font-weight: normal;">レベルアップ！HPが全回復！</small>`;
-                }
-                */
-                /* if (titleResult && titleResult.new_title_unlocked) {
-                    feedbackHTML += `<br><small style="font-size: 0.4em; font-weight: normal;">称号【${titleResult.new_title_unlocked}】を獲得！</small>`;
-                } */
+
                 if (this.elements.feedbackArea) {
                     this.elements.feedbackArea.innerHTML = feedbackHTML;
                     this.elements.feedbackArea.className = isCorrect ? 'feedback-area correct' : 'feedback-area incorrect';
@@ -1267,34 +1127,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }, 1500);
 
-                /*
-                // await this.api(`/api/users/${this.state.currentUser.id}/answer`, 'POST', { quiz_id: quiz.id, is_correct: isCorrect });
-                const isUnsure = this.elements.unsureCheckbox ? this.elements.unsureCheckbox.checked : false;
-                */
-                /*
-                // 'unsure' モードの場合、チェックボックスの状態は送信しない (undefined を送る)
-                if (this.state.gameMode === 'unsure') {
-                    isUnsure = undefined;
-                }
-                */
-                /*
-                let isCorrectForAPI = isCorrect;
-                if (this.state.gameMode === 'unsure') {
-                    isCorrectForAPI = undefined;
-                }
-                */
-                /*
-                await this.api(`/api/users/${this.state.currentUser.id}/answer`, 'POST', { 
-                    quiz_id: quiz.id,
-                    is_correct: isCorrect,
-                    is_unsure: isUnsure // 'unsure' モードの時は undefined が送られる
-                });
-                */
-
                 // 'unsure' モードの時は、API通信をスキップ
                 if (this.state.gameMode !== 'unsure') {
 
-                    const progressResult = await this.api(`/api/users/${this.state.currentUser.id}/progress`, 'PATCH', { 
+                    const progressResult = await this.api(`/api/users/${this.state.currentUser.id}/progress`, 'PATCH', {
                         level: this.state.currentUser.level,
                         xp: this.state.currentUser.xp,
                         max_hp: this.state.playerMaxHP
@@ -1350,26 +1186,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 1500);
 
             } finally {
-                // 6. 最後に、必ず次の問題へ進む処理を予約する
-                // this.state.currentQuizIndex++;
-                /* setTimeout(() => {
-                    this.showNextQuestion();
-                }, 2500);
-                */
             }
         },
 
-        // ★★★ ここに新しい関数を追加 ★★★
         async showYearlyResults() {
-            this.logStudyTime(); // ★★★ この行を追加 ★★★
+            this.logStudyTime();
             this.showScreen('results');
             const results = this.state.yearlySessionResults;
             const totalQuestions = results.length;
             const totalCorrect = results.filter(r => r.isCorrect).length;
             const totalScorePercent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-            
+
             this.elements.totalScoreDisplay.querySelector('p span').textContent = totalScorePercent;
-            
+
             const fieldCounts = {
                 'ストラテジ系': { correct: 0, total: 0 },
                 'マネジメント系': { correct: 0, total: 0 },
@@ -1382,15 +1211,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (result.isCorrect) fieldCounts[field].correct++;
                 }
             });
-            
+
             const strategyPercent = fieldCounts['ストラテジ系'].total > 0 ? Math.round((fieldCounts['ストラテジ系'].correct / fieldCounts['ストラテジ系'].total) * 100) : 0;
             const managementPercent = fieldCounts['マネジメント系'].total > 0 ? Math.round((fieldCounts['マネジメント系'].correct / fieldCounts['マネジメント系'].total) * 100) : 0;
             const technologyPercent = fieldCounts['テクノロジ系'].total > 0 ? Math.round((fieldCounts['テクノロジ系'].correct / fieldCounts['テクノロジ系'].total) * 100) : 0;
-            
+
             this.elements.strategyScoreDisplay.querySelector('p').textContent = `${strategyPercent}%`;
             this.elements.managementScoreDisplay.querySelector('p').textContent = `${managementPercent}%`;
             this.elements.technologyScoreDisplay.querySelector('p').textContent = `${technologyPercent}%`;
-            
+
             // サーバーに結果を保存
             await this.api(`/api/users/${this.state.currentUser.id}/save-yearly-result`, 'POST', {
                 category: this.state.selectedCategory,
@@ -1398,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalScorePercent, strategyPercent, managementPercent, technologyPercent
             });
         },
-        
+
         async loadAndDisplayHistory() {
             this.showScreen('history');
             this.elements.historyList.innerHTML = '<p>履歴を読み込んでいます...</p>';
@@ -1431,44 +1260,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
-        /*
-        // ★★★ この関数を丸ごと追加 ★★★
-        async loadAndDisplayUnsureHistory() {
-            this.showScreen('unsure-history');
-            this.elements.unsureHistoryList.innerHTML = '<p>チェック履歴を読み込んでいます...</p>';
-            try {
-                // 新しいAPIを呼び出す
-                const data = await this.api(`/api/users/${this.state.currentUser.id}/unsure-answers`);
-                
-                if (data.quizzes && data.quizzes.length > 0) {
-                    this.elements.unsureHistoryList.innerHTML = ''; // 一旦クリア
-                    data.quizzes.forEach(quiz => {
-                        // 各問題を表示するHTML要素を作成
-                        const item = document.createElement('div');
-                        item.className = 'unsure-history-item';
-                        // 試験名、分野などを表示
-                        item.innerHTML = `
-                            <span>${displayNameMap[quiz.category] || quiz.category} / ${displayNameMap[quiz.field] || quiz.field} / ${displayNameMap[quiz.subfield] || quiz.subfield} / ${displayNameMap[quiz.detail] || quiz.detail} (${quiz.year || '----'}年)</span>
-                            ${quiz.question} 
-                        `;
-                        // ★★★ クリックイベントを追加 (任意) ★★★
-                        item.addEventListener('click', () => {
-                            // クリックしたら解説を表示するなどの動作を追加できる
-                            alert(`正解: ${quiz.answer}\n解説: ${quiz.commentary || '解説はありません'}`);
-                        });
-                        this.elements.unsureHistoryList.appendChild(item);
-                    });
-                } else {
-                    this.elements.unsureHistoryList.innerHTML = '<p>チェックした問題はありません。</p>';
-                }
-            } catch (e) {
-                console.error("チェック履歴の読み込みエラー:", e);
-                this.elements.unsureHistoryList.innerHTML = '<p>チェック履歴の読み込みに失敗しました。</p>';
-            }
-        },
-        // ★★★ ここまで追加 ★★★
-        */
-
         pauseGame() {
             clearInterval(this.state.timer);
             this.elements.pauseOverlay.classList.remove('hidden');
@@ -1482,8 +1273,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.pauseOverlay.classList.add('hidden');
             this.logStudyTime();
 
-            // 辞めた時点での「現在のHP」を保存する
-            localStorage.setItem('currentPlayerHP', this.state.playerHP);
+            if (this.state.currentUser) {
+                localStorage.setItem(`hp_${this.state.currentUser.id}`, this.state.playerHP);
+            }
 
             if (this.state.gameMode === 'yearly') {
                 this.showScreen('year');
@@ -1526,7 +1318,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("handleNextQuestionClick で回答履歴の保存に失敗:", error);
-                // ★ ここでエラーが出た場合はトーストで通知
+
                 this.showRewardNotification(`エラー: ${error.message}`, 'error');
             }
 
@@ -1565,11 +1357,6 @@ document.addEventListener('DOMContentLoaded', () => {
         async handleUsePotion() {
             try {
                 // クライアント側でHPやポーション数をチェック
-                /*
-                if (this.state.playerHP <= 0) {
-                    return this.showRewardNotification("HPが 0 です。回復してください。");
-                }
-                */
                 if (this.state.playerHP >= this.state.playerMaxHP) {
                     return this.showRewardNotification("HPは満タンです。", 'error');
                 }
@@ -1592,8 +1379,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         this.state.playerHP = this.state.playerMaxHP; // 最大HPを超えない
                     }
 
-                    // 3. 回復したHPを localStorage に保存
-                    localStorage.setItem('currentPlayerHP', this.state.playerHP);
+                    // 3. 回復したHPをlocalStorageに保存
+                    localStorage.setItem(`hp_${this.state.currentUser.id}`, this.state.playerHP);
 
                     // 4. UIを更新
                     this.updateUserInfo(); // ポーション数の表示を更新
