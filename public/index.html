@@ -60,7 +60,7 @@
                                 <div id="xp-bar-fill-status" class="xp-bar-fill"></div>
                                 <span class="xp-text">XP: <span id="xp-display-status"></span> / <span id="xp-to-next-status"></span></span>
                             </div>
-                            <div class="hp-bar-container status-hp-bar"> 
+                            <div class="hp-bar-container status-hp-bar">
                                 <div class="hp-bar">
                                     <div id="player-hp-bar-fill-status" class="hp-bar-fill"></div>
                                 </div>
@@ -73,19 +73,13 @@
                         <canvas id="stats-chart-status"></canvas>
                     </div>
                 </div>
-                <!--
-                <div class="earned-titles">
-                    <h4>獲得した称号</h4>
-                    <div id="earned-titles-list">
-                        </div>
-                </div>
-                -->
+
                 <div class="status-item potion-display">
                     <p>ポーション: <span id="potion-count-display">0</span> 個</p>
                     <button id="use-potion-btn" class="action-btn tertiary">回復する (HP+30)</button>
                 </div>
                 <div class="action-buttons">
-                    <button id="go-to-category-btn" class="action-btn">問題を解く</button>
+                    <button id="go-to-category-btn" class="action-btn">クエスト</button>
                     <button id="view-titles-btn" class="action-btn secondary">獲得した称号</button>
                     <button id="view-history-btn" class="action-btn secondary">過去の修練履歴</button>
                     <button id="start-unsure-quiz-btn" class="action-btn secondary">チェックから出題</button>
@@ -145,7 +139,7 @@
                 <div id="subfield-list"></div>
             </main>
         </div>
-        
+
         <div id="detail-screen" class="screen">
             <header>
                 <h2 id="detail-screen-title">討伐するモンスターを選択</h2>
@@ -155,7 +149,7 @@
                 <div id="detail-list"></div>
             </main>
         </div>
-        
+
         <div id="year-screen" class="screen">
             <header>
                 <h2>試練を選択</h2>
@@ -186,9 +180,7 @@
                     </div>
                     <div id="timer-display">60</div>
                 </div>
-                <!--
-                <input type="checkbox" id="unsure-checkbox" title="自信がない問題にチェック">
-                -->
+
                 <button id="pause-btn" class="small-btn">
                     <i class="fa-solid fa-gear"></i>
                 </button>
@@ -223,18 +215,6 @@
                     <div id="feedback-area"></div>
                     <h2 id="question-text">問題文がここに表示されます</h2>
                     <div id="choices-container"></div>
-                    <!--
-                    <div class="unsure-checkbox-container">
-                        <input type="checkbox" id="unsure-checkbox">
-                        <label for="unsure-checkbox">この問題は自信がない（まぐれかも）</label>
-                    </div>
-                    -->
-                    <!--
-                    <div id="commentary-area" class="hidden">
-                        <h4><i class="fa-solid fa-book-open"></i> 解説</h4>
-                        <p id="commentary-text"></p>
-                    </div>
-                    -->
                 </div>
             </main>
 
@@ -252,7 +232,7 @@
                     <button id="next-question-btn" class="action-btn">次の問題へ</button>
                 </div>
             </div>
-            
+
             <div id="pause-overlay" class="hidden">
                 <div class="pause-menu">
                     <h2>一時停止中</h2>
@@ -289,33 +269,6 @@
                 </div>
             </main>
         </div>
-        
-        <!--
-        <div id="history-choice-screen" class="screen">
-            <header>
-                <h2>履歴の種類を選択</h2>
-                <button id="back-to-status-from-choice-btn" class="small-btn">戻る</button>
-            </header>
-            <main class="status-main"> 
-                <div class="action-buttons">
-                    <button id="view-yearly-history-btn" class="action-btn">修練履歴を見る</button>
-                    <button id="view-unsure-history-btn" class="action-btn secondary">チェックした問題を見る</button>
-                </div>
-            </main>
-        </div>
-
-        <div id="unsure-history-screen" class="screen">
-            <header>
-                <h2>チェックした問題一覧</h2>
-                <button id="back-to-choice-from-unsure-btn" class="small-btn">戻る</button>
-            </header>
-            <main>
-                <div id="unsure-history-list" class="history-list-container">
-                    <p>チェックした問題はありません。</p>
-                </div>
-            </main>
-        </div>
-        -->
 
         <div id="titles-screen" class="screen">
             <header>
