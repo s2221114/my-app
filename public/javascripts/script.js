@@ -786,8 +786,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     this.state.monsterMaxHP = calculatedHp > 0 ? calculatedHp : 10; // HPが0にならないように最低10を保証
 
-                    if (this.state.monsterHPCache[this.state.selectedDetail] !== undefined) {
-                        this.state.monsterHP = this.state.monsterHPCache[this.state.selectedDetail];
+                    const uniqueKey = `${this.state.selectedCategory}_${this.state.selectedDetail}`;
+
+                    if (this.state.monsterHPCache[uniqueKey] !== undefined) {
+                        this.state.monsterHP = this.state.monsterHPCache[uniqueKey];
                     } else {
                         this.state.monsterHP = this.state.monsterMaxHP;
                     }
@@ -1056,7 +1058,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         this.state.currentUser.xp += 10;
                         this.state.monsterHP -= 10;
                         if (this.state.gameMode === 'standard') {
-                            this.state.monsterHPCache[this.state.selectedDetail] = this.state.monsterHP;
+                            const uniqueKey = `${this.state.selectedCategory}_${this.state.selectedDetail}`;
+                            this.state.monsterHPCache[uniqueKey] = this.state.monsterHP;
                         }
 
                         const xpNeeded = this.state.currentUser.level * 20;
@@ -1157,7 +1160,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 称号獲得通知
                     if (isCorrect && this.state.monsterHP <= 0 && this.state.gameMode === 'standard') {
                         try {
-                            titleResult = await this.api(`/api/users/${this.state.currentUser.id}/defeat`, 'POST', { detail_name: this.state.selectedDetail });
+                            const uniqueTitleName = `${this.state.selectedCategory} ${this.state.selectedDetail}`;
+                            titleResult = await this.api(`/api/users/${this.state.currentUser.id}/defeat`, 'POST', { detail_name: uniqueTitleName });
+
                             if (titleResult && titleResult.new_title_unlocked) {
                                 if (titleResult.user) {
                                     this.state.currentUser = titleResult.user;
