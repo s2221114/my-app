@@ -33,7 +33,7 @@ body {
 }
 
 /* --- 汎用クラス --- */
-.screen { display: none; padding: 30px 35px; box-sizing: border-box; width: 100%; }
+.screen { display: none; padding: 10px 35px; box-sizing: border-box; width: 100%; }
 .screen.active { display: flex; flex-direction: column; }
 .hidden { display: none !important; }
 
@@ -54,13 +54,15 @@ button:hover { background-color: var(--primary-hover); transform: translateY(-2p
 .small-btn { padding: 8px 15px; font-size: 0.9em; width: auto; background-color: #777; }
 .small-btn:hover { background-color: #555; }
 
-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding-bottom: 15px; 
-    margin-bottom: 10px;
-    gap: 10px; /* ★ 要素間の隙間を追加 (お好みで調整) ★ */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* padding-bottom: 15px; */
+    padding-bottom: 5px;
+    /* margin-bottom: 10px; */
+    margin-bottom: 5px;
+    gap: 10px;
 }
 
 .user-info { flex-grow: 1; }
@@ -122,9 +124,13 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 250px;
+    /* min-height: 250px; */
+    position: relative; /* 必須 */
+    height: 220px;      /* 高さを固定 */
+    width: 100%;        /* 幅も指定 */
+    overflow: hidden;   /* はみ出したら隠す */
 }
-.player-character-box img { 
+.player-character-box img {
     width: 280px;
     height: 280px;
     border-radius: 15px;
@@ -134,10 +140,9 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative; 
+    position: relative;
 }
 
-/* ★★★ ここにスタイルを追加 ★★★ */
 .earned-titles {
     margin-bottom: 25px;
     padding: 15px;
@@ -157,17 +162,6 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     gap: 8px;
     justify-content: center;
 }
-/*
-.title-badge {
-    background-color: #e9ecef;
-    color: var(--text-color);
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.9em;
-    font-weight: 700;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-*/
 
 .action-buttons { display: grid; gap: 10px; }
 .action-btn { font-size: 1.1em; padding: 12px; }
@@ -187,7 +181,6 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     border-color: #1e7e34;
 }
 
-/* ★★★ ここから結果画面のスタイルを追加 ★★★ */
 .results-main {
     display: flex;
     flex-direction: column;
@@ -241,7 +234,6 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     font-weight: 700;
 }
 
-/* ★★★ ここから履歴画面のスタイルを追加 ★★★ */
 #history-list {
     display: flex;
     flex-direction: column;
@@ -275,7 +267,6 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     display: flex;
     justify-content: space-around;
 }
-/* ★★★ ここまで追加 ★★★ */
 
 .results-history {
     background-color: #f7f9fc;
@@ -309,7 +300,6 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     background-color: #f8d7da;
     color: #721c24;
 }
-/* ★★★ ここまで追加 ★★★ */
 
 /* --- カテゴリ/分野/詳細分野/年度選択画面 --- */
 #category-screen header h2, #field-screen header h2, #subfield-screen header h2, #detail-screen header h2, #year-screen header h2 {
@@ -343,7 +333,7 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     align-items: center;
     gap: 15px;
 }
-/* ★★★ ここを変更 ★★★ */
+
 .monster-info img {
     width: 40px;
     height: 40px;
@@ -445,38 +435,38 @@ button:disabled:hover {
     align-items: center;
     gap: 15px;
 }
-#game-screen .xp-bar { 
+#game-screen .xp-bar {
     width: 200px;
-    height: 20px; 
-    background-color: #e9ecef; 
-    border-radius: 20px; 
-    position: relative; 
-    overflow: hidden; 
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
     margin-top: 0;
 }
-#game-screen .xp-text { 
-    position: absolute; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    color: var(--text-color); 
-    font-weight: 700; 
-    font-size: 0.8em; 
+#game-screen .xp-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-color);
+    font-weight: 700;
+    font-size: 0.8em;
     white-space: nowrap;
 }
-#timer-display { 
+#timer-display {
     position: static;
-    font-size: 1.5em; 
-    font-weight: 700; 
-    color: var(--primary-color); 
-    background: white; 
-    border-radius: 50%; 
-    width: 40px; 
-    height: 40px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--primary-color);
+    background: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 .battle-field {
     display: flex;
@@ -486,7 +476,7 @@ button:disabled:hover {
     background-image: url('/images/grassland2.jpg');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center bottom; 
+    background-position: center bottom;
     border-radius: 10px;
     padding: 20px 20px 10px;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
@@ -509,14 +499,14 @@ button:disabled:hover {
     flex-direction: column;
     align-items: center;
 }
-.character-player img, .character-enemy img { 
+.character-player img, .character-enemy img {
     width: 150px;
     height: 150px;
-    border-radius: 10px; 
+    border-radius: 10px;
 }
 /* .damage-effect {
     position: absolute;
-    bottom: 33px; 
+    bottom: 33px;
     left: 50%;
     transform: translateX(-50%);
     width: 120px;
@@ -530,21 +520,21 @@ button:disabled:hover {
 } */
 .damage-effect {
     position: absolute;
-    top: 0; /* ★ 変更: 画像の上部に配置 */
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 150px; /* ★ 変更: Lottieのサイズに合わせる */
-    height: 150px; /* ★ 変更: Lottieのサイズに合わせる */
-    opacity: 0; /* ★ 変更: JSで制御するためデフォルトは0 */
+    width: 150px;
+    height: 150px;
+    opacity: 0;
     pointer-events: none;
-    transition: opacity 0.1s; /* ★ 変更: トランジションを短く */
-    z-index: 10; /* ★ 追加: 画像より手前に表示 */
+    transition: opacity 0.1s;
+    z-index: 10;
 }
-/* .damage-effect.show は不要になるので削除 */
-.character-player p, .character-enemy p { 
+
+.character-player p, .character-enemy p {
     order: -1;
-    margin-bottom: 5px; 
-    font-weight: bold; 
+    margin-bottom: 5px;
+    font-weight: bold;
 }
 
 #monster-name {
@@ -647,7 +637,6 @@ button:disabled:hover {
 /* #feedback-area.correct { background-color: #e2f5ea; color: var(--correct-color); } */
 /* #feedback-area.incorrect { background-color: #fce8e6; color: var(--incorrect-color); } */
 
-/* ★★★ ここからスタイルを追加 ★★★ */
 #pause-overlay {
     position: absolute;
     top: 0;
@@ -685,9 +674,7 @@ button:disabled:hover {
 .action-btn.secondary:hover {
     background-color: #7f8c8d;
 }
-/* ★★★ ここまで追加 ★★★ */
 
-/* ★★★ ここからスタイルを追加/変更 ★★★ */
 #pause-btn {
     width: 40px;
     height: 40px;
@@ -698,9 +685,7 @@ button:disabled:hover {
     justify-content: center;
     align-items: center;
 }
-/* ★★★ ここまで追加/変更 ★★★ */
 
-/* ★★★ ここからアニメーションのスタイルを追加 ★★★ */
 @keyframes breathing-animation {
     0% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
@@ -710,7 +695,6 @@ button:disabled:hover {
 .is-breathing {
     animation: breathing-animation 2.5s ease-in-out infinite;
 }
-/* ★★★ ここまで追加 ★★★ */
 
 /* 解説モーダルの背景オーバーレイ */
 #commentary-overlay {
@@ -774,11 +758,11 @@ button:disabled:hover {
 
 /* 称号一覧画面のリストコンテナ */
 #titles-list-large {
-    display: grid; /* ★ FlexboxからGridに変更 */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* ★ 2〜3列のグリッド */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 15px; /* アイテム間の隙間 */
-    padding: 0; /* ★ パディングを削除 */
-    background: none; /* ★ 背景色を削除 (画面背景と同じに) */
+    padding: 0;
+    background: none;
     border-radius: 0;
     min-height: 100px;
 }
@@ -840,7 +824,7 @@ button:disabled:hover {
     font-size: 1.1em;
     font-weight: 700;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    
+
     /* アニメーション: 3.5秒かけて表示・消滅 */
     opacity: 0;
     transform: translateY(-20px);
@@ -873,7 +857,7 @@ button:disabled:hover {
 /* 解説モーダル内のチェックボックス用コンテナ */
 .modal-unsure-checkbox-container {
     position: absolute;
-    top: 28px; /* ★ タイトルの横に来るように微調整 */
+    top: 28px;
     right: 30px;
     display: flex;
     align-items: center;
@@ -883,8 +867,8 @@ button:disabled:hover {
 .modal-unsure-checkbox-container input[type="checkbox"] {
     width: auto;
     cursor: pointer;
-    transform: scale(1.4); /* ★ サイズを 1.4倍 に調整 */
-    margin: 0; /* ★ マージンをリセット */
+    transform: scale(1.4);
+    margin: 0;
 }
 
 /* ステータス画面のポーション表示 */
@@ -919,4 +903,9 @@ button:disabled:hover {
     z-index: 9999;    /* 他のどの要素よりも手前に表示 */
     width: 300px;     /* 通知の最大幅 */
     pointer-events: none; /* 通知エリア自体はクリックできないようにする */
+}
+
+#stats-chart-status {
+    max-height: 100% !important;
+    max-width: 100% !important;
 }
