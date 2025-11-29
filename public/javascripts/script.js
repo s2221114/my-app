@@ -148,10 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.state.playerHP = this.state.playerMaxHP;
                 }
 
+                /*
                 // 安全装置 (もし現在のHPが最大HPを超えていたら丸める)
                 if (this.state.playerHP > this.state.playerMaxHP) {
                     this.state.playerHP = this.state.playerMaxHP;
                 }
+                */
 
                 this.state.selectedCategory = localStorage.getItem('selectedCategory') || '';
                 this.state.selectedField = localStorage.getItem('selectedField') || '';
