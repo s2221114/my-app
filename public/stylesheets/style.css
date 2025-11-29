@@ -33,7 +33,7 @@ body {
 }
 
 /* --- 汎用クラス --- */
-.screen { display: none; padding: 10px 35px; box-sizing: border-box; width: 100%; }
+.screen { display: none; padding: 20px 35px; box-sizing: border-box; width: 100%; }
 .screen.active { display: flex; flex-direction: column; }
 .hidden { display: none !important; }
 
@@ -59,9 +59,9 @@ header {
     justify-content: space-between;
     align-items: center;
     /* padding-bottom: 15px; */
-    padding-bottom: 5px;
+    padding-bottom: 10px;
     /* margin-bottom: 10px; */
-    margin-bottom: 5px;
+    margin-bottom: 15px;
     gap: 10px;
 }
 
@@ -126,7 +126,7 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
     align-items: center;
     /* min-height: 250px; */
     position: relative; /* 必須 */
-    height: 220px;      /* 高さを固定 */
+    height: 240px;      /* 高さを固定 */
     width: 100%;        /* 幅も指定 */
     overflow: hidden;   /* はみ出したら隠す */
 }
@@ -164,7 +164,7 @@ input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); 
 }
 
 .action-buttons { display: grid; gap: 10px; }
-.action-btn { font-size: 1.1em; padding: 12px; }
+.action-btn { font-size: 1.1em; padding: 14px; border-radius: 8px;}
 .action-btn.secondary { background-color: #95a5a6; }
 .action-btn.secondary:hover { background-color: #7f8c8d; }
 
