@@ -253,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 playerHPTextStatus: D.getElementById('player-hp-text-status'),
                 potionCountDisplay: D.getElementById('potion-count-display'),
                 usePotionBtn: D.getElementById('use-potion-btn'),
+                buyPotionBtn: D.getElementById('buy-potion-btn'),
             };
         },
         loadLottieAnimations() {
@@ -409,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             this.elements.usePotionBtn.addEventListener('click', () => this.handleUsePotion());
+            this.elements.buyPotionBtn.addEventListener('click', () => this.handleBuyPotion());
         },
         async api(endpoint, method = 'GET', body = null) {
             try {
@@ -605,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedCategory: '', selectedField: '', selectedSubfield: '', selectedDetail: '', selectedYear: null,
                 gameMode: 'standard', timer: null, timeLeft: 60, statsChart: null,
                 playerHP: currentHP, playerMaxHP: currentMaxHP, monsterHP: 100, monsterMaxHP: 100,
-                monsterHPCache: {}
+                monsterHPCache: {}, selectedDetailQuestionCount: 0, yearlySessionResults: [], sessionStartTime: null
             };
             this.state = initialState; // stateを初期値に戻す
             // localStorage.clear();
@@ -743,15 +745,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         async loadAndDisplayYearProgress() { return; },
         async startGame() {
-            if (this.state.playerHP <= 0) {
-                // HPが0だったら、ゲームを開始しない
+            if (this.state.playerHP <= 0) { // HPが0だったら、ゲームを開始しない
                 this.showRewardNotification("HPが 0 のため、戦闘を開始できません。", 'error');
-
-                // 強制的にステータス画面に戻す
-                this.showScreen('status');
-
-                // startGame処理をここで中断
-                return;
+                this.showScreen('status'); // 強制的にステータス画面に戻す
+                return; // startGame処理をここで中断
             }
 
             // 修練の間開始時に結果をリセット
@@ -781,6 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.elements.monsterImage.src = monster.image;
                     this.elements.monsterName.textContent = monster.name;
 
+                    /*
                     // HP計算式
                     const calculatedHp = this.state.selectedDetailQuestionCount * 10;
 
@@ -793,6 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         this.state.monsterHP = this.state.monsterMaxHP;
                     }
+                    */
                 }
             } else { // 'yearly'または'unsure'モード
                 this.elements.monsterImage.src = '/images/黒い男.png';
@@ -834,12 +833,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await this.api(url);
                 if (result && result.quizzes && result.quizzes.length > 0) {
                     this.state.quizzes = result.quizzes.sort(() => Math.random() - 0.5);
+
+                    if (this.state.gameMode === 'standard') {
+                        // 1. 未回答の問題数（今回戦う数）
+                        const remainingCount = this.state.quizzes.length;
+
+                        // 2. もともとの全問題数
+                        let totalCount = this.state.selectedDetailQuestionCount;
+
+                        // ※万が一データが取れていない場合は、未回答数を全数とする
+                        if (!totalCount || totalCount < remainingCount) {
+                            totalCount = remainingCount;
+                        }
+
+                        // 3. HPを設定
+                        this.state.monsterMaxHP = totalCount * 10;   // 分母
+                        this.state.monsterHP = remainingCount * 10;  // 分子
+                    }
+                    this.updateHPDisplay(); // HP設定後に表示を更新
+
                     this.state.currentQuizIndex = 0;
                     this.showNextQuestion();
                 } else {
                     // 問題が0件だった場合
                     if (this.state.gameMode === 'standard') {
                         this.elements.questionText.textContent = 'このステージをクリアしました！おめでとうございます！';
+                        this.state.monsterHP = 0;
+                        this.state.monsterMaxHP = 100; // ゼロ除算エラーを防ぐための仮の値
                     } else if (this.state.gameMode === 'unsure') {
                         this.elements.questionText.textContent = 'チェックした問題はまだありません。';
                     } else { // 'yearly'の場合
@@ -848,6 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.elements.choicesContainer.innerHTML = '';
                     clearInterval(this.state.timer);
                     this.logStudyTime();
+                    this.updateHPDisplay(); // 0になったHPを画面に反映
                 }
             } catch (err) {
                 console.error("クイズの取得または表示でエラー:", err);
@@ -1007,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.timerDisplay.textContent = this.state.timeLeft;
             clearInterval(this.state.timer);
             this.state.timer = setInterval(() => {
-                this.state.timeLeft--;
+                this.state.timeLeft--;this.handleLogout
                 this.elements.timerDisplay.textContent = this.state.timeLeft;
                 if (this.state.timeLeft <= 0) this.handleTimeout();
             }, 1000);
@@ -1396,6 +1417,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 this.showRewardNotification(`ポーションの使用に失敗しました: ${err.message}`, 'error');
+            }
+        },
+
+        async handleBuyPotion() {
+            if (!confirm("経験値を 50 消費して、ポーションを生成します。\n※現在のレベルや最大HPが下がる可能性がありますが、よろしいですか？")) return;
+
+            try {
+                const result = await this.api(`/api/users/${this.state.currentUser.id}/exchange-potion`, 'POST');
+
+                if (result && result.user) {
+                    this.state.currentUser = result.user;
+                    localStorage.setItem('currentUser', JSON.stringify(this.state.currentUser));
+
+                    // レベルダウンに対応して、クライアント側の最大HPも更新する
+                    if (result.user.max_hp) {
+                        this.state.playerMaxHP = result.user.max_hp;
+
+                        // もし現在のHPが、下がった最大HPを超えていたら丸める
+                        if (this.state.playerHP > this.state.playerMaxHP) {
+                            this.state.playerHP = this.state.playerMaxHP;
+                            localStorage.setItem('currentPlayerHP', this.state.playerHP);
+                        }
+                    }
+
+                    this.updateUserInfo();
+                    this.showRewardNotification("身を削ってポーションを生成しました！", "title-unlocked");
+                }
+            } catch (err) {
+                this.showRewardNotification(err.message, 'error');
             }
         },
 
