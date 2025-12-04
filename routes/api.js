@@ -726,4 +726,57 @@ router.get('/admin/all-users', (req, res) => {
     });
 });
 
+// ポーション生成 (身を削って生成)
+router.post('/users/:id/exchange-potion', (req, res) => {
+    const userId = req.params.id;
+    const COST = 50; // コスト
+
+    db.get("SELECT level, xp, max_hp, potion_count FROM users WHERE id = ?", [userId], (err, user) => {
+        if (err || !user) return res.status(404).json({ error: "ユーザーが見つかりません" });
+
+        // 1. 現在のレベル・XPから「トータルXP」を逆算する
+        // (Lv 1->2 には 20xp, 2->3 には 40xp... という計算の逆)
+        // 公式: 10 * level * (level - 1) + current_xp
+        let totalXP = (10 * user.level * (user.level - 1)) + user.xp;
+
+        // 2. トータルXPがコストに足りているか確認
+        if (totalXP < COST) {
+            return res.status(400).json({ error: `経験値が足りません！(トータル ${totalXP} XP / 必要 ${COST} XP)` });
+        }
+
+        // 3. コストを支払う
+        totalXP -= COST;
+
+        // 4. 新しいトータルXPから「レベル」と「現在XP」を再計算する
+        let newLevel = 1;
+        let newXP = totalXP;
+
+        while (true) {
+            let xpNeededForNext = newLevel * 20; // 次のレベルに必要なXP
+            if (newXP < xpNeededForNext) {
+                break; // 足りなくなったらそこが今のレベル
+            }
+            newXP -= xpNeededForNext;
+            newLevel++;
+        }
+
+        // 5. レベルに合わせて最大HPも再計算 (Lv1=100, +10ずつ)
+        const newMaxHP = 100 + (newLevel - 1) * 10;
+
+        // 6. データベースを更新 (レベル、XP、最大HP、ポーション)
+        const sql = "UPDATE users SET level = ?, xp = ?, max_hp = ?, potion_count = potion_count + 1 WHERE id = ?";
+        db.run(sql, [newLevel, newXP, newMaxHP, userId], function(updateErr) {
+            if (updateErr) return res.status(500).json({ error: "交換に失敗しました" });
+
+            // 最新情報を返す
+            db.get("SELECT * FROM users WHERE id = ?", [userId], (getErr, updatedUser) => {
+                res.status(200).json({
+                    message: "ポーションを生成しました！(レベル変動あり)",
+                    user: updatedUser
+                });
+            });
+        });
+    });
+});
+
 module.exports = router;
