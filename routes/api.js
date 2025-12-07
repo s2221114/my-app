@@ -646,25 +646,27 @@ router.post('/users/:id/use-potion', (req, res) => {
 
 // 管理者用：全ユーザーのステータス・学習時間を確認するAPI
 router.get('/admin/all-users', (req, res) => {
-    const secretKey = "admin123"; 
+    const secretKey = "admin123";
     if (req.query.key !== secretKey) {
         return res.status(403).send("⛔ アクセス拒否: 正しいキーを入力してください。");
     }
 
     const sql = `
-        SELECT 
-            id, 
-            username, 
-            level, 
-            max_hp, 
-            potion_count, 
-            total_study_time_seconds,
+        SELECT
+            u.id,
+            u.username,
+            u.level,
+            u.max_hp,
+            u.potion_count,
+            u.total_study_time_seconds,
+            /* 最後に問題を解いた日時 (UTC) */
+            (SELECT MAX(answered_at) FROM user_answers WHERE user_id = u.id) as last_played_utc,
             /* 正解数 (is_correct = 1) */
-            (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id AND is_correct = 1) as solved_count,
+            (SELECT COUNT(*) FROM user_answers WHERE user_id = u.id AND is_correct = 1) as solved_count,
             /* 総回答数 (すべて) */
-            (SELECT COUNT(*) FROM user_answers WHERE user_id = users.id) as total_answer_count
-        FROM users 
-        ORDER BY id ASC
+            (SELECT COUNT(*) FROM user_answers WHERE user_id = u.id) as total_answer_count
+        FROM users u
+        ORDER BY u.id ASC
     `;
 
     db.all(sql, [], (err, rows) => {
@@ -697,13 +699,27 @@ router.get('/admin/all-users', (req, res) => {
                             <th>Lv</th>
                             <th>HP</th>
                             <th>ポーション</th>
-                            <th>総回答数</th> <th>正解数</th>
-                            <th>学習時間 (秒)</th> </tr>
+                            <th>総回答数</th>
+                            <th>正解数</th>
+                            <th>学習時間 (秒)</th>
+                            <th>最終プレイ日時</th> </tr>
                     </thead>
                     <tbody>
         `;
 
         rows.forEach(user => {
+            // 日時の整形 (UTC -> 日本時間)
+            let lastPlayedStr = "---";
+            if (user.last_played_utc) {
+                // SQLiteの日時はUTCで保存されている前提
+                const date = new Date(user.last_played_utc + "Z"); // "Z"をつけてUTCとしてパース
+                lastPlayedStr = date.toLocaleString('ja-JP', {
+                    timeZone: 'Asia/Tokyo',
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+            }
+
             html += `
                 <tr>
                     <td class="center">${user.id}</td>
@@ -711,7 +727,10 @@ router.get('/admin/all-users', (req, res) => {
                     <td class="num">${user.level}</td>
                     <td class="num">${user.max_hp}</td>
                     <td class="num">${user.potion_count}</td>
-                    <td class="num">${user.total_answer_count}</td> <td class="num" style="color: blue; font-weight:bold;">${user.solved_count}</td> <td class="num">${user.total_study_time_seconds}</td> </tr>
+                    <td class="num">${user.total_answer_count}</td>
+                    <td class="num" style="color: blue; font-weight:bold;">${user.solved_count}</td>
+                    <td class="num">${user.total_study_time_seconds}</td>
+                    <td class="center">${lastPlayedStr}</td> </tr>
             `;
         });
 
