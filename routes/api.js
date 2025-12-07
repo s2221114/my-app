@@ -708,16 +708,37 @@ router.get('/admin/all-users', (req, res) => {
         `;
 
         rows.forEach(user => {
+            // 学習時間の計算
+            const totalSeconds = user.total_study_time_seconds || 0;
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const timeString = `${hours}時間 ${minutes}分`;
+
             // 日時の整形 (UTC -> 日本時間)
             let lastPlayedStr = "---";
             if (user.last_played_utc) {
-                // SQLiteの日時はUTCで保存されている前提
-                const date = new Date(user.last_played_utc + "Z"); // "Z"をつけてUTCとしてパース
-                lastPlayedStr = date.toLocaleString('ja-JP', {
-                    timeZone: 'Asia/Tokyo',
-                    year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
+                // 文字列として取得
+                let dateStr = user.last_played_utc;
+
+                // もし末尾に "Z" がなければ追加する (SQLiteの CURRENT_TIMESTAMP 対策)
+                // もし既に "Z" があれば何もしない (ISOString 対策)
+                if (!dateStr.endsWith("Z")) {
+                    dateStr += "Z";
+                }
+
+                // 日付オブジェクトに変換
+                const date = new Date(dateStr);
+
+                // 有効な日付かチェックしてから変換
+                if (!isNaN(date.getTime())) {
+                    lastPlayedStr = date.toLocaleString('ja-JP', {
+                        timeZone: 'Asia/Tokyo',
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                } else {
+                    lastPlayedStr = "日時データ破損";
+                }
             }
 
             html += `
