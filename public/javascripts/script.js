@@ -158,7 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.state.selectedCategory = localStorage.getItem('selectedCategory') || '';
                 this.state.selectedField = localStorage.getItem('selectedField') || '';
                 this.state.selectedSubfield = localStorage.getItem('selectedSubfield') || '';
-                const lastScreen = localStorage.getItem('lastActiveScreen');
+                this.state.selectedDetail = localStorage.getItem('selectedDetail') || '';
+                this.state.selectedYear = localStorage.getItem('selectedYear') || '';
+                let lastScreen = localStorage.getItem('lastActiveScreen');
+
+                if (lastScreen === 'game') { // もしゲーム画面だったら、強制的にステータス画面に戻す
+                    lastScreen = 'status';
+                }
+
                 this.showScreen(lastScreen || 'status');
             } else {
                 this.showScreen('auth');
@@ -351,8 +358,10 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.viewHistoryBtn.addEventListener('click', () => this.loadAndDisplayHistory());
             this.elements.categoryList.addEventListener('click', (e) => {
                 const button = e.target.closest('.category-btn');
-                if (button) {
+                if (button && !button.disabled) {
                     this.state.selectedCategory = button.dataset.category;
+                    // 保存
+                    localStorage.setItem('selectedCategory', this.state.selectedCategory);
                     this.showScreen('field');
                 }
             });
@@ -361,6 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const button = e.target.closest('.field-btn');
                 if (button && !button.disabled) {
                     this.state.selectedField = button.dataset.field;
+                    // 保存
+                    localStorage.setItem('selectedField', this.state.selectedField);
                     this.showScreen('subfield');
                 }
             });
@@ -368,6 +379,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const button = e.target.closest('.subfield-btn');
                 if (button && !button.disabled) {
                     this.state.selectedSubfield = button.dataset.subfield;
+                    // 保存
+                    localStorage.setItem('selectedSubfield', this.state.selectedSubfield);
                     this.showScreen('detail');
                 }
             });
@@ -378,6 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.state.selectedDetail = button.dataset.detail;
                     // 問題数をstateに保存
                     this.state.selectedDetailQuestionCount = parseInt(button.dataset.questionCount, 10);
+                    // 保存
+                    localStorage.setItem('selectedDetail', this.state.selectedDetail);
                     this.startGame();
                 }
             });
@@ -387,6 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (button && !button.disabled) {
                     this.state.gameMode = 'yearly';
                     this.state.selectedYear = button.dataset.year;
+                    // 保存
+                    localStorage.setItem('selectedYear', this.state.selectedYear);
                     this.startGame();
                 }
             });
